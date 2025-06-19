@@ -1,0 +1,15 @@
+# Node (frontend)
+node_modules/
+.next/
+dist/
+
+# Python (backend)
+__pycache__/
+venv/
+.env
+*.pyc
+
+# macOS/Linux/IDE
+.DS_Store
+.idea/
+.vscode/
