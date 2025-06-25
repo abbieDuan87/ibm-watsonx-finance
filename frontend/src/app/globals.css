@@ -1,35 +1,11 @@
 @import "tailwindcss";
-@plugin "daisyui";
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Oswald:wght@400;700&display=swap");
-
-:root {
-	--background: #f3f3e0;
-	--foreground: #183b4e;
+@plugin "daisyui" {
+	themes: retro --default, dark --prefersdark;
 }
-
-@theme inline {
-	--color-background: var(--background);
-	--color-foreground: var(--foreground);
-	--color-primary: #dda853;
+@plugin "daisyui/theme" {
+	name: "retro";
+	default: true;
+	--color-primary: #183b4e;
 	--color-secondary: #27548a;
-	--font-sans: "Inter", sans-serif;
-	--font-title: "Oswald", sans-serif;
-	--font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-	:root {
-		--background: #183b4e;
-		--foreground: #f3f3e0;
-	}
-}
-
-body {
-	background: var(--background);
-	color: var(--foreground);
-	font-family: var(--font-sans);
-}
-
-div {
-	background-color: var(--background);
 }

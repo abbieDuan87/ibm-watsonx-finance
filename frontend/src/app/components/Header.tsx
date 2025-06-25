@@ -12,22 +12,22 @@ export default function Header() {
 				<div className="flex-none">
 					<ul className="menu menu-horizontal px-1">
 						<li>
-							<Link href="/" className="font-medium">
+							<Link href="/" className="font-medium btn hover:btn-link">
 								Home
 							</Link>
 						</li>
 						<li>
-							<Link href="/upload" className="font-medium">
+							<Link href="/upload" className="font-medium btn hover:btn-link">
 								Upload
 							</Link>
 						</li>
 						<li>
-							<Link href="/insights" className="font-medium">
+							<Link href="/insights" className="font-medium btn hover:btn-link">
 								Insights
 							</Link>
 						</li>
 						<li>
-							<Link href="/tutorial" className="font-medium">
+							<Link href="/tutorial" className="font-medium btn hover:btn-link">
 								Tutorial
 							</Link>
 						</li>
