@@ -3,9 +3,3 @@
 @plugin "daisyui" {
 	themes: retro --default, dark --prefersdark;
 }
-@plugin "daisyui/theme" {
-	name: "retro";
-	default: true;
-	--color-primary: #183b4e;
-	--color-secondary: #27548a;
-}
