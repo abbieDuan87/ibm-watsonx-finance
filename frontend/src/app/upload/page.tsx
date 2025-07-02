@@ -5,6 +5,10 @@ import { useState } from "react";
 export default function UploadPage() {
 	const [file, setFile] = useState<File | null>(null);
 	const [result, setResult] = useState<string>("");
+	const [chatInput, setChatInput] = useState("");
+	const [chatHistory, setChatHistory] = useState<
+		{ role: "user" | "ai"; message: string }[]
+	>([]);
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files && e.target.files.length > 0) {
@@ -31,6 +35,21 @@ export default function UploadPage() {
 		}
 	};
 
+	const handleChatSend = async () => {
+		if (!chatInput.trim()) return;
+		// Add user message to chat history
+		setChatHistory((prev) => [...prev, { role: "user", message: chatInput }]);
+		// Placeholder for WatsonX API integration
+		// Simulate AI response for now
+		setTimeout(() => {
+			setChatHistory((prev) => [
+				...prev,
+				{ role: "ai", message: "This is a placeholder response from WatsonX." },
+			]);
+		}, 500);
+		setChatInput("");
+	};
+
 	return (
 		<main className="p-6 space-y-4">
 			<h2 className="text-xl font-semibold">Upload Report</h2>
@@ -46,6 +65,51 @@ export default function UploadPage() {
 					<p>{result}</p>
 				</div>
 			)}
+
+			{/* Chat Window */}
+			<div className="mt-8 card bg-base-100 shadow-md">
+				<div className="card-body">
+					<h3 className="font-title text-lg mb-2">Chat with WatsonX</h3>
+					<div className="h-48 overflow-y-auto mb-4 border rounded p-2 bg-base-200">
+						{chatHistory.length === 0 && (
+							<p className="text-base-content/60">No messages yet.</p>
+						)}
+						{chatHistory.map((msg, idx) => (
+							<div
+								key={idx}
+								className={`mb-2 ${
+									msg.role === "user" ? "text-right" : "text-left"
+								}`}
+							>
+								<span
+									className={`inline-block px-3 py-1 rounded ${
+										msg.role === "user"
+											? "bg-primary text-primary-content"
+											: "bg-secondary text-secondary-content"
+									}`}
+								>
+									{msg.message}
+								</span>
+							</div>
+						))}
+					</div>
+					<div className="flex gap-2">
+						<input
+							type="text"
+							className="input input-bordered flex-1"
+							placeholder="Type your question..."
+							value={chatInput}
+							onChange={(e) => setChatInput(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter") handleChatSend();
+							}}
+						/>
+						<button className="btn btn-primary" onClick={handleChatSend}>
+							Send
+						</button>
+					</div>
+				</div>
+			</div>
 		</main>
 	);
 }

@@ -4,7 +4,7 @@
 	},
 	"scripts": {
 		"dev": "run-p dev:*",
-		"dev:frontend": "cd frontend && yarn dev",
+		"dev:frontend": "cd frontend && npm run dev",
 		"dev:backend": "cd backend && ./start.sh"
 	}
 }

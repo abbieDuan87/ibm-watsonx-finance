@@ -1,16 +1,21 @@
+import Link from "next/link";
+
 export default function Home() {
 	return (
 		<main className="p-8">
-			<div className="hero bg-orange-400 min-h-screen text-yellow-200">
+			<div className="hero min-h-screen">
 				<div className="hero-content text-center">
 					<div className="max-w-md">
 						<h1 className="text-5xl font-bold">Hello there</h1>
 						<p className="py-6">
-							Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda
-							excepturi exercitationem quasi. In deleniti eaque aut repudiandae
-							et a id nisi.
+							FinSight AI empowers small businesses with AI-driven financial
+							insights. Upload your financial reports and interact with our
+							WatsonX-powered assistant to get instant, actionable analysis and
+							guidance—no data science expertise required.
 						</p>
-						<button className="btn">Get Started</button>
+						<Link href="/upload" passHref>
+							<button className="btn">Get Started</button>
+						</Link>
 					</div>
 				</div>
 			</div>
