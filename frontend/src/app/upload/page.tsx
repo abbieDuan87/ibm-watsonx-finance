@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useDropzone } from "react-dropzone";
+import { parseCSV, parsePDF, parseExcel } from "@/utils/parsers";
 
 export default function UploadPage() {
 	const [file, setFile] = useState<File | null>(null);
@@ -10,43 +12,76 @@ export default function UploadPage() {
 		{ role: "user" | "ai"; message: string }[]
 	>([]);
 
-	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (e.target.files && e.target.files.length > 0) {
-			setFile(e.target.files[0]);
+	const onDrop = (acceptedFiles: File[]) => {
+		if (acceptedFiles && acceptedFiles.length > 0) {
+			setFile(acceptedFiles[0]);
 		}
 	};
+
+	const { getRootProps, getInputProps, isDragActive } = useDropzone({
+		onDrop,
+	});
 
 	const handleUpload = async () => {
 		if (!file) return;
 
-		const formData = new FormData();
-		formData.append("file", file);
+		const type = file.type;
+		let output: string | any[] = "Unsupported file format.";
 
 		try {
-			const res = await fetch("http://localhost:8000/api/upload", {
-				method: "POST",
-				body: formData,
-			});
-			const data = await res.json();
-			setResult(data.summary || "No result returned.");
+			if (type === "text/csv") {
+				output = await parseCSV(file);
+			} else if (type === "application/pdf") {
+				output = await parsePDF(file);
+			} else if (
+				type ===
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+			) {
+				output = await parseExcel(file);
+			} else if (file.name.endsWith(".xlsx")) {
+				// fallback for browsers that don't detect Excel MIME type correctly
+				output = await parseExcel(file);
+			} else {
+				output = "Unsupported file type.";
+			}
 		} catch (err) {
-			setResult("Upload failed.");
-			console.error(err);
+			console.error("Parsing error:", err);
+			output = "Failed to parse file.";
+		}
+
+		if (typeof output === "string") {
+			setResult(output);
+		} else {
+			setResult(JSON.stringify(output, null, 2));
 		}
 	};
 
 	const handleChatSend = async () => {
 		if (!chatInput.trim()) return;
-		// Add user message to chat history
 		setChatHistory((prev) => [...prev, { role: "user", message: chatInput }]);
-		// Placeholder for WatsonX API integration
-		// Simulate AI response for now
-		setTimeout(() => {
+
+		try {
+			const formData = new FormData();
+			formData.append("text", chatInput);
+
+			const res = await fetch("http://localhost:8000/analyze", {
+				method: "POST",
+				body: formData,
+			});
+			const data = await res.json();
+
 			setChatHistory((prev) => [
 				...prev,
-				{ role: "ai", message: "This is a placeholder response from WatsonX." },
+				{ role: "ai", message: data.insight || "No response from Watsonx." },
 			]);
-		}, 500);
+		} catch (err) {
+			console.error("Watsonx error:", err);
+			setChatHistory((prev) => [
+				...prev,
+				{ role: "ai", message: "Failed to connect to Watsonx." },
+			]);
+		}
+
 		setChatInput("");
 	};
 
@@ -54,7 +89,25 @@ export default function UploadPage() {
 		<main className="p-6 space-y-4">
 			<h2 className="text-xl font-semibold">Upload Report</h2>
 
-			<input type="file" className="file-input" onChange={handleFileChange} />
+			{/* Drag and Drop Area */}
+			<div
+				{...getRootProps()}
+				className={`border-2 border-dashed rounded p-8 text-center cursor-pointer transition-colors ${
+					isDragActive
+						? "border-primary bg-primary/10"
+						: "border-base-300 bg-base-100"
+				}`}
+			>
+				<input {...getInputProps({ refKey: "ref" })} />
+				{file ? (
+					<p className="text-success">Selected file: {file.name}</p>
+				) : isDragActive ? (
+					<p>Drop the file here ...</p>
+				) : (
+					<p>Drag & drop a file here, or click to select a file</p>
+				)}
+			</div>
+
 			<button onClick={handleUpload} className="btn btn-primary">
 				Upload
 			</button>

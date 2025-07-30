@@ -1,3 +1,4 @@
 #!/bin/bash
+cd "$(dirname "$0")"
 source venv/bin/activate
-uvicorn app.main:app --reload
+python -m uvicorn app.main:app --reload
