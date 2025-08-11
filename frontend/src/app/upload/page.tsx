@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, type Accept, type DropzoneOptions } from "react-dropzone";
 
 export default function UploadPage() {
 	const [file, setFile] = useState<File | null>(null);
@@ -13,26 +13,30 @@ export default function UploadPage() {
 	>([]);
 	const [loading, setLoading] = useState(false);
 
-	const onDrop = (acceptedFiles: File[]) => {
-		if (acceptedFiles && acceptedFiles.length > 0) {
-			setFile(acceptedFiles[0]);
-			setResult("");
-			setInsight("");
-		}
-	};
-
-	const { getRootProps, getInputProps, isDragActive } = useDropzone({
-		accept: [
-			"image/jpeg",
-			"image/png",
-			"text/csv",
-			"application/pdf",
-			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+	const accept: Accept = {
+		"image/*": [".jpeg", ".jpg", ".png"],
+		"text/csv": [".csv"],
+		"application/pdf": [".pdf"],
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
 			".xlsx",
 		],
+	};
+
+	const onDrop = (acceptedFiles: File[]) => {
+		if (acceptedFiles.length) setFile(acceptedFiles[0]);
+	};
+
+	const options: DropzoneOptions = {
+		accept,
 		multiple: false,
 		onDrop,
-	});
+		// some setups require these to satisfy the HTML props pick
+		onDragEnter: () => {},
+		onDragOver: () => {},
+		onDragLeave: () => {},
+	};
+
+	const { getRootProps, getInputProps, isDragActive } = useDropzone(options);
 
 	const handleUpload = async () => {
 		if (!file) return;
@@ -118,7 +122,7 @@ export default function UploadPage() {
 						: "border-base-300 bg-base-100"
 				}`}
 			>
-				<input {...getInputProps({ refKey: "ref" })} />
+				<input {...getInputProps()} />
 				{file ? (
 					<p className="text-success">Selected file: {file.name}</p>
 				) : isDragActive ? (
