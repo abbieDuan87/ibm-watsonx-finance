@@ -2,74 +2,95 @@
 
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { parseCSV, parsePDF, parseExcel } from "@/utils/parsers";
 
 export default function UploadPage() {
 	const [file, setFile] = useState<File | null>(null);
 	const [result, setResult] = useState<string>("");
+	const [insight, setInsight] = useState<string>("");
 	const [chatInput, setChatInput] = useState("");
 	const [chatHistory, setChatHistory] = useState<
 		{ role: "user" | "ai"; message: string }[]
 	>([]);
+	const [loading, setLoading] = useState(false);
 
 	const onDrop = (acceptedFiles: File[]) => {
 		if (acceptedFiles && acceptedFiles.length > 0) {
 			setFile(acceptedFiles[0]);
+			setResult("");
+			setInsight("");
 		}
 	};
 
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
+		accept: [
+			"image/jpeg",
+			"image/png",
+			"text/csv",
+			"application/pdf",
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+			".xlsx",
+		],
+		multiple: false,
 		onDrop,
 	});
 
 	const handleUpload = async () => {
 		if (!file) return;
-
-		const type = file.type;
-		let output: string | any[] = "Unsupported file format.";
-
+		setLoading(true);
+		setInsight("");
 		try {
-			if (type === "text/csv") {
-				output = await parseCSV(file);
-			} else if (type === "application/pdf") {
-				output = await parsePDF(file);
-			} else if (
-				type ===
-				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-			) {
-				output = await parseExcel(file);
-			} else if (file.name.endsWith(".xlsx")) {
-				// fallback for browsers that don't detect Excel MIME type correctly
-				output = await parseExcel(file);
-			} else {
-				output = "Unsupported file type.";
+			const form = new FormData();
+			form.append("file", file);
+
+			// 1) Send file to Next.js API route for OCR/parsing
+			const res = await fetch("/api/upload", {
+				method: "POST",
+				body: form,
+			});
+			const data = await res.json();
+			const extracted =
+				data.extracted_text || data.error || "No text extracted.";
+			setResult(extracted);
+
+			// 2) Auto-analyze the extracted text with Granite
+			if (data.extracted_text) {
+				const analyzeForm = new FormData();
+				analyzeForm.append("text", extracted);
+				const ai = await fetch("/api/analyze", {
+					method: "POST",
+					body: analyzeForm,
+				});
+				const aiData = await ai.json();
+				setInsight(aiData.insight || "No response from Watsonx.");
+				setChatHistory((prev) => [
+					...prev,
+					{ role: "user", message: "Analyze the uploaded report." },
+					{
+						role: "ai",
+						message: aiData.insight || "No response from Watsonx.",
+					},
+				]);
 			}
 		} catch (err) {
-			console.error("Parsing error:", err);
-			output = "Failed to parse file.";
-		}
-
-		if (typeof output === "string") {
-			setResult(output);
-		} else {
-			setResult(JSON.stringify(output, null, 2));
+			console.error("Upload/analyze error:", err);
+			setResult("Failed to process file.");
+		} finally {
+			setLoading(false);
 		}
 	};
 
+	// Chat stays for ad-hoc questions after the auto analysis
 	const handleChatSend = async () => {
 		if (!chatInput.trim()) return;
 		setChatHistory((prev) => [...prev, { role: "user", message: chatInput }]);
-
 		try {
 			const formData = new FormData();
 			formData.append("text", chatInput);
-
-			const res = await fetch("http://localhost:8000/analyze", {
+			const res = await fetch("/api/analyze", {
 				method: "POST",
 				body: formData,
 			});
 			const data = await res.json();
-
 			setChatHistory((prev) => [
 				...prev,
 				{ role: "ai", message: data.insight || "No response from Watsonx." },
@@ -81,7 +102,6 @@ export default function UploadPage() {
 				{ role: "ai", message: "Failed to connect to Watsonx." },
 			]);
 		}
-
 		setChatInput("");
 	};
 
@@ -108,21 +128,25 @@ export default function UploadPage() {
 				)}
 			</div>
 
-			<button onClick={handleUpload} className="btn btn-primary">
-				Upload
+			<button
+				onClick={handleUpload}
+				className="btn btn-primary"
+				disabled={loading}
+			>
+				{loading ? "Processing..." : "Upload & Analyze"}
 			</button>
 
-			{result && (
-				<div className="mt-4 p-4 bg-gray-100 border rounded">
-					<h3 className="font-semibold mb-2">Summary:</h3>
-					<p>{result}</p>
+			{insight && (
+				<div className="mt-4 p-4 bg-blue-50 border rounded">
+					<h3 className="font-semibold mb-2">Watsonx Insights:</h3>
+					<pre className="whitespace-pre-wrap">{insight}</pre>
 				</div>
 			)}
 
 			{/* Chat Window */}
 			<div className="mt-8 card bg-base-100 shadow-md">
 				<div className="card-body">
-					<h3 className="font-title text-lg mb-2">Chat with WatsonX</h3>
+					<h3 className="font-title text-lg mb-2">Chat with Watsonx</h3>
 					<div className="h-48 overflow-y-auto mb-4 border rounded p-2 bg-base-200">
 						{chatHistory.length === 0 && (
 							<p className="text-base-content/60">No messages yet.</p>
@@ -150,7 +174,7 @@ export default function UploadPage() {
 						<input
 							type="text"
 							className="input input-bordered flex-1"
-							placeholder="Type your question..."
+							placeholder="Ask follow-up questions..."
 							value={chatInput}
 							onChange={(e) => setChatInput(e.target.value)}
 							onKeyDown={(e) => {
