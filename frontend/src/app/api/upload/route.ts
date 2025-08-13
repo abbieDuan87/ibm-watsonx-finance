@@ -1,17 +1,24 @@
-import { NextRequest } from "next/server";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-export async function POST(req: NextRequest) {
-	const formData = await req.formData();
-	const backendRes = await fetch("http://127.0.0.1:8000/upload", {
+export async function POST(req: Request) {
+	const base = process.env.BACKEND_BASE_URL || "http://127.0.0.1:8000";
+	const path = process.env.BACKEND_UPLOAD_PATH || "/api/upload";
+	const body = await req.text();
+	const ct = req.headers.get("content-type") || "application/json";
+
+	const r = await fetch(`${base}${path}`, {
 		method: "POST",
-		body: formData,
+		headers: { "content-type": ct },
+		body,
+		cache: "no-store",
 	});
-	const data = await backendRes.text();
-	return new Response(data, {
-		status: backendRes.status,
+
+	const text = await r.text();
+	return new Response(text, {
+		status: r.status,
 		headers: {
-			"content-type":
-				backendRes.headers.get("content-type") || "application/json",
+			"content-type": r.headers.get("content-type") ?? "application/json",
 		},
 	});
 }
