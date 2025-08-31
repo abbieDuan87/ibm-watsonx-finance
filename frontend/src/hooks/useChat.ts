@@ -7,6 +7,15 @@ import { analyzeText } from "@/lib/api";
 const GREETING =
 	"Hi, I’m your financial assistant. Ask about cash flow, margins, runway, or upload a report (PDF/CSV/XLSX) and I’ll analyse it.";
 
+export function formatAIMessage(message: string): string[] {
+	if (!message) return [];
+	const lines = message
+		.split(/\n|\s*-\s+/)
+		.map((line) => line.trim())
+		.filter(Boolean);
+	return lines;
+}
+
 export function useChat() {
 	const [chatHistory, setChatHistory] = useState<ChatMsg[]>([]);
 	const [chatInput, setChatInput] = useState("");

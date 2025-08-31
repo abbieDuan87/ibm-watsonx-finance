@@ -9,7 +9,7 @@ export default function MessageBubble({
 }) {
 	const isUser = role === "user";
 	return (
-		<div className={`mb-2 ${isUser ? "text-right" : "text-left"}`}>
+		<div className={`mb-4 ${isUser ? "text-right" : "text-left"}`}>
 			<span
 				className={`inline-block px-3 py-1 rounded ${
 					isUser
