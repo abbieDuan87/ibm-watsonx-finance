@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     WATSONX_URL: str = "https://eu-gb.ml.cloud.ibm.com"
     WATSONX_MODEL_ID: str = "ibm/granite-3-8b-instruct"
 
-    MAX_TOKENS: int = 256
-    TEMPERATURE: float = 0.2
+    MAX_TOKENS: int = 2048
+    TEMPERATURE: float = 0.1
     TOP_P: float = 0.9
 
 
