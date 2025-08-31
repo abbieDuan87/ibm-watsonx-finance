@@ -16,16 +16,25 @@ export function formatAIMessage(message: string): string[] {
 	return lines;
 }
 
-export function useChat() {
-	const [chatHistory, setChatHistory] = useState<ChatMsg[]>([]);
+type UseChatProps = {
+	chatHistory?: ChatMsg[];
+	setChatHistory?: React.Dispatch<React.SetStateAction<ChatMsg[]>>;
+	extractedText?: string;
+};
+
+export function useChat(props?: UseChatProps) {
+	const [internalHistory, internalSetHistory] = useState<ChatMsg[]>([]);
+	const chatHistory = props?.chatHistory ?? internalHistory;
+	const setChatHistory = props?.setChatHistory ?? internalSetHistory;
 	const [chatInput, setChatInput] = useState("");
 	const [chatLoading, setChatLoading] = useState(false);
 	const scrollRef = useRef<HTMLDivElement>(null);
+	const extractedText = props?.extractedText ?? "";
 
 	// Seed greeting once after hydration
 	useEffect(() => {
 		setChatHistory([{ role: "ai", message: GREETING }]);
-	}, []);
+	}, [setChatHistory]);
 
 	// Auto scroll
 	useEffect(() => {
@@ -53,8 +62,12 @@ export function useChat() {
 		setChatInput("");
 		setChatLoading(true);
 
+		const prompt = extractedText
+			? `Given the following uploaded data:\n${extractedText}\n\nUser question: ${content}`
+			: content;
+
 		try {
-			const { ok, status, data } = await analyzeText(content);
+			const { ok, status, data } = await analyzeText(prompt);
 			const aiMsg = unwrapAIMessage(data) || "No response from Watsonx.";
 
 			if (!ok) {

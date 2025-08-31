@@ -3,15 +3,21 @@
 import MessageBubble from "./MessageBubble";
 import { useChat, formatAIMessage } from "@/hooks/useChat";
 
-export default function ChatWindow() {
-	const {
-		chatHistory,
-		chatInput,
-		setChatInput,
-		chatLoading,
-		sendMessage,
-		scrollRef,
-	} = useChat();
+import type { ChatMsg } from "@/types/chat";
+
+type ChatWindowProps = {
+	chatHistory: ChatMsg[];
+	setChatHistory: React.Dispatch<React.SetStateAction<ChatMsg[]>>;
+	extractedText: string;
+};
+
+export default function ChatWindow({
+	chatHistory,
+	setChatHistory,
+	extractedText,
+}: ChatWindowProps) {
+	const { chatInput, setChatInput, chatLoading, sendMessage, scrollRef } =
+		useChat({ chatHistory, setChatHistory, extractedText });
 
 	return (
 		<div className="mt-8 card bg-base-100 shadow-md">

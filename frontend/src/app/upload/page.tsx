@@ -1,21 +1,38 @@
 "use client";
 
-import ChatWindow from "../components/ChatWindow";
+import { useState } from "react";
+import type { ChatMsg } from "@/types/chat";
 import UploadArea from "../components/UploadArea";
+import ChatWindow from "../components/ChatWindow";
 
 export default function UploadPage() {
+	const [chatHistory, setChatHistory] = useState<ChatMsg[]>([
+		{
+			role: "ai",
+			message:
+				"Hi, I’m your financial assistant. Ask about cash flow, margins, runway, or upload a report (PDF/CSV/XLSX) and I’ll analyse it.",
+		},
+	]);
+
+	const [extractedText, setExtractedText] = useState<string>("");
+
 	return (
 		<main className="p-6 space-y-8">
 			<UploadArea
-				// Optional wiring if you want the auto-analysis to also appear in chat:
-				onChatPair={(userMsg, aiMsg) => {
-					// You can expose a chat context to push messages if needed.
-					// For now, this is a no-op placeholder to show the seam.
-					// Option A: lift chat state up or use a Zustand/Context store.
-					console.debug("Auto-chat:", userMsg, aiMsg);
+				onChatPair={(userMsg: string, aiMsg: string) => {
+					setChatHistory((prev) => [
+						...prev,
+						{ role: "user", message: userMsg },
+						{ role: "ai", message: aiMsg },
+					]);
 				}}
+				onExtractedText={setExtractedText}
 			/>
-			<ChatWindow />
+			<ChatWindow
+				chatHistory={chatHistory}
+				setChatHistory={setChatHistory}
+				extractedText={extractedText}
+			/>
 		</main>
 	);
 }

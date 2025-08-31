@@ -7,9 +7,11 @@ import { analyzeText, uploadFile } from "@/lib/api";
 export default function UploadArea({
 	onInsight,
 	onChatPair, // optional: push auto-analysis Q/A into chat
+	onExtractedText, // new prop to lift extracted text up
 }: {
 	onInsight?: (text: string) => void;
 	onChatPair?: (userMsg: string, aiMsg: string) => void;
+	onExtractedText?: (text: string) => void;
 }) {
 	const [file, setFile] = useState<File | null>(null);
 	const [result, setResult] = useState("");
@@ -54,6 +56,9 @@ export default function UploadArea({
 			const extracted =
 				data.extracted_text || data.error || "No text extracted.";
 			setResult(extracted);
+
+			// Pass extracted text up for chat context
+			onExtractedText?.(extracted);
 
 			// 2) Auto-analyse if we have text
 			if (data.extracted_text) {

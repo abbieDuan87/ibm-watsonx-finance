@@ -176,7 +176,10 @@ export default function TutorialPage() {
 		"Resources & Links",
 	];
 	const [step, setStep] = useState(1);
-	const progress = useMemo(() => (step / steps.length) * 100, [step]);
+	const progress = useMemo(
+		() => (step / steps.length) * 100,
+		[step, steps.length]
+	);
 
 	return (
 		<div className="mx-auto max-w-7xl px-4 py-8">
