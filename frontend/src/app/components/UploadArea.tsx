@@ -19,7 +19,6 @@ export default function UploadArea({
 	const [loading, setLoading] = useState(false);
 
 	const accept: Accept = {
-		"image/*": [".jpeg", ".jpg", ".png"],
 		"text/csv": [".csv"],
 		"application/pdf": [".pdf"],
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
