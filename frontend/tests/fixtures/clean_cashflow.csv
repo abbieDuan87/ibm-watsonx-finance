@@ -1,0 +1,5 @@
+date,description,amount,type
+2024-01-05,Customer invoice #1001,3500,inflow
+2024-01-12,Rent,-1200,outflow
+2024-01-20,SaaS subscriptions,-180,outflow
+2024-01-25,Customer invoice #1002,4200,inflow

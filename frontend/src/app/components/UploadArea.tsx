@@ -78,18 +78,19 @@ export default function UploadArea({
 	};
 
 	return (
-		<section className="space-y-4">
+		<section className="space-y-4" data-testid="upload-section">
 			<h2 className="text-xl font-semibold">Upload Report</h2>
 
 			<div
 				{...getRootProps()}
+				data-testid="dropzone"
 				className={`border-2 border-dashed rounded p-8 text-center cursor-pointer transition-colors ${
 					isDragActive
 						? "border-primary bg-primary/10"
 						: "border-base-300 bg-base-100"
 				}`}
 			>
-				<input {...getInputProps()} />
+				<input {...getInputProps()} data-testid="file-input" />
 				{file ? (
 					<p className="text-success">Selected file: {file.name}</p>
 				) : isDragActive ? (
@@ -108,7 +109,10 @@ export default function UploadArea({
 			</button>
 
 			{insight && (
-				<div className="mt-4 p-4 bg-blue-50 border rounded">
+				<div
+					className="mt-4 p-4 bg-blue-50 border rounded"
+					data-testid="analysis-result"
+				>
 					<h3 className="font-semibold mb-2">Watsonx Insights:</h3>
 					<pre className="whitespace-pre-wrap">{insight}</pre>
 				</div>
