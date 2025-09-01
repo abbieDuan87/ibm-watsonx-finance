@@ -1,0 +1,44 @@
+[
+  {
+    "name": "minScore",
+    "expected": 0.85,
+    "actual": 0.75,
+    "values": [
+      0.75
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditProperty": "performance",
+    "auditId": "categories",
+    "level": "warn",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "name": "minScore",
+    "expected": 0.85,
+    "actual": 0.76,
+    "values": [
+      0.76
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditProperty": "performance",
+    "auditId": "categories",
+    "level": "warn",
+    "url": "http://localhost:3000/upload-test"
+  },
+  {
+    "name": "minScore",
+    "expected": 0.85,
+    "actual": 0.77,
+    "values": [
+      0.77
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditProperty": "performance",
+    "auditId": "categories",
+    "level": "warn",
+    "url": "http://localhost:3000/tutorial"
+  }
+]

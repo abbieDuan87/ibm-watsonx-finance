@@ -100,9 +100,16 @@ export async function GET(request: Request) {
 		cache = { data: out, ts: now };
 
 		return NextResponse.json(out, { status: 200 });
-	} catch (err: any) {
+	} catch (err: unknown) {
+		let message = "Unexpected server error";
+		if (err instanceof Error) {
+			message = err.message;
+		} else if (typeof err === "string") {
+			message = err;
+		}
+
 		return NextResponse.json(
-			{ error: "Unexpected server error", detail: String(err?.message || err) },
+			{ error: "Unexpected server error", detail: message },
 			{ status: 500 }
 		);
 	}

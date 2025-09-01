@@ -7,6 +7,22 @@ import { analyzeText } from "@/lib/api";
 const GREETING =
 	"Hi, I’m your financial assistant. Ask about cash flow, margins, runway, or upload a report (PDF/CSV/XLSX) and I’ll analyse it.";
 
+// Shape your backend (and model fallback) might return
+type AIAPIData = {
+	result?: string;
+	insight?: string;
+	raw?: string;
+	choices?: Array<{ message?: { content?: string } }>;
+	error?: string;
+};
+
+// If you want to type analyzeText’s return minimally:
+type AnalyzeResponse = {
+	ok: boolean;
+	status: number;
+	data: AIAPIData;
+};
+
 export function formatAIMessage(message: string): string[] {
 	if (!message) return [];
 	const lines = message
@@ -22,6 +38,17 @@ type UseChatProps = {
 	extractedText?: string;
 };
 
+function unwrapAIMessage(data: unknown): string {
+	if (data && typeof data === "object") {
+		const d = data as AIAPIData;
+		return (
+			d.result ?? d.insight ?? d.choices?.[0]?.message?.content ?? d.raw ?? ""
+		);
+	}
+	if (typeof data === "string") return data;
+	return "";
+}
+
 export function useChat(props?: UseChatProps) {
 	const [internalHistory, internalSetHistory] = useState<ChatMsg[]>([]);
 	const chatHistory = props?.chatHistory ?? internalHistory;
@@ -31,9 +58,11 @@ export function useChat(props?: UseChatProps) {
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const extractedText = props?.extractedText ?? "";
 
-	// Seed greeting once after hydration
+	// Seed greeting once after hydration (only if history is empty)
 	useEffect(() => {
-		setChatHistory([{ role: "ai", message: GREETING }]);
+		setChatHistory((prev) =>
+			prev.length ? prev : [{ role: "ai", message: GREETING }]
+		);
 	}, [setChatHistory]);
 
 	// Auto scroll
@@ -42,17 +71,6 @@ export function useChat(props?: UseChatProps) {
 			scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
 		}
 	}, [chatHistory]);
-
-	const unwrapAIMessage = (data: any): string => {
-		// Prefer backend's `result`, then `insight`, then common watsonx shape, then raw
-		return (
-			data?.result ??
-			data?.insight ??
-			data?.choices?.[0]?.message?.content ??
-			data?.raw ??
-			""
-		);
-	};
 
 	const sendMessage = async (text?: string) => {
 		const content = (text ?? chatInput).trim();
@@ -67,20 +85,19 @@ export function useChat(props?: UseChatProps) {
 			: content;
 
 		try {
-			const { ok, status, data } = await analyzeText(prompt);
-			const aiMsg = unwrapAIMessage(data) || "No response from Watsonx.";
+			const res = (await analyzeText(prompt)) as AnalyzeResponse; // narrow once here
+			const aiMsg = unwrapAIMessage(res.data) || "No response from Watsonx.";
 
-			if (!ok) {
+			if (!res.ok) {
 				setChatHistory((prev) => [
 					...prev,
-					{ role: "ai", message: data?.error ?? aiMsg },
+					{ role: "ai", message: res.data?.error ?? aiMsg },
 				]);
-				// Optional: console hint for debugging
-				console.warn("[useChat] analyzeText non-200:", status, data);
+				console.warn("[useChat] analyzeText non-200:", res.status, res.data);
 			} else {
 				setChatHistory((prev) => [...prev, { role: "ai", message: aiMsg }]);
 			}
-		} catch (e) {
+		} catch (e: unknown) {
 			console.error("[useChat] analyzeText error:", e);
 			setChatHistory((prev) => [
 				...prev,
