@@ -5,14 +5,13 @@ from pdf2image import convert_from_path
 import pytesseract
 import logging
 
-MAX_PREVIEW_ROWS = 200  # avoid giant responses
+MAX_PREVIEW_ROWS = 200
 
 def df_to_preview(df: pd.DataFrame, max_rows: int = MAX_PREVIEW_ROWS) -> str:
     rows = min(len(df), max_rows)
     return df.head(rows).to_string(index=False)
 
 def extract_text_from_upload(file: UploadFile) -> str:
-    # Persist to a temp file so libraries that need a path can read it
     with tempfile.NamedTemporaryFile(delete=False) as tmp:
         shutil.copyfileobj(file.file, tmp)
         tmp_path = tmp.name
@@ -41,16 +40,14 @@ def extract_text_from_upload(file: UploadFile) -> str:
 
         if name.endswith(".xlsx"):
             try:
-                # requires: pip install openpyxl
                 df = pd.read_excel(tmp_path, engine="openpyxl")
                 return df_to_preview(df)
             except Exception as e:
-                logging.exception("Error reading .xlsx file")  # logs full stacktrace to console
+                logging.exception("Error reading .xlsx file")
                 raise HTTPException(status_code=400, detail=f"Excel (.xlsx) parse error: {e}")
 
         if name.endswith(".xls"):
             try:
-                # requires: pip install xlrd
                 df = pd.read_excel(tmp_path, engine="xlrd")
                 return df_to_preview(df)
             except ImportError:

@@ -6,8 +6,6 @@ import { analyzeText } from "@/lib/api";
 
 const GREETING =
 	"Hi, I’m your financial assistant. Ask about cash flow, margins, runway, or upload a report (PDF/CSV/XLSX) and I’ll analyse it.";
-
-// Shape your backend (and model fallback) might return
 type AIAPIData = {
 	result?: string;
 	insight?: string;
@@ -16,7 +14,6 @@ type AIAPIData = {
 	error?: string;
 };
 
-// If you want to type analyzeText’s return minimally:
 type AnalyzeResponse = {
 	ok: boolean;
 	status: number;
@@ -58,14 +55,12 @@ export function useChat(props?: UseChatProps) {
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const extractedText = props?.extractedText ?? "";
 
-	// Seed greeting once after hydration (only if history is empty)
 	useEffect(() => {
 		setChatHistory((prev) =>
 			prev.length ? prev : [{ role: "ai", message: GREETING }]
 		);
 	}, [setChatHistory]);
 
-	// Auto scroll
 	useEffect(() => {
 		if (scrollRef.current) {
 			scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -85,7 +80,7 @@ export function useChat(props?: UseChatProps) {
 			: content;
 
 		try {
-			const res = (await analyzeText(prompt)) as AnalyzeResponse; // narrow once here
+			const res = (await analyzeText(prompt)) as AnalyzeResponse;
 			const aiMsg = unwrapAIMessage(res.data) || "No response from Watsonx.";
 
 			if (!res.ok) {

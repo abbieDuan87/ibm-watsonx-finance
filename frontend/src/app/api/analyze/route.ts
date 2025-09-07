@@ -7,17 +7,13 @@ export async function POST(req: Request) {
 		const path = process.env.BACKEND_ANALYZE_PATH || "/api/analyze";
 		const body = await req.text();
 		const ct = req.headers.get("content-type") || "application/json";
-
 		const url = `${base}${path}`;
-
 		const upstream = await fetch(url, {
 			method: "POST",
 			headers: { "content-type": ct },
 			body,
 			cache: "no-store",
 		});
-
-		// DO NOT parse/transform here. Just return upstream as-is.
 		const text = await upstream.text();
 		return new Response(text, {
 			status: upstream.status,

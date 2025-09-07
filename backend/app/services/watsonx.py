@@ -1,4 +1,3 @@
-# app/services/watsonx.py
 from ibm_watsonx_ai.foundation_models import ModelInference
 from ibm_watsonx_ai import Credentials
 from app.core.config import settings

@@ -12,9 +12,6 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.j
 // ----- CSV -----
 export type CSVRow = Record<string, string>;
 
-/**
- * Parse a CSV into objects keyed by header names.
- */
 export async function parseCSV(file: File): Promise<CSVRow[]> {
 	return new Promise((resolve, reject) => {
 		Papa.parse<CSVRow>(file, {
@@ -28,13 +25,9 @@ export async function parseCSV(file: File): Promise<CSVRow[]> {
 
 // ----- PDF -----
 function isTextItem(x: TextItem | TextMarkedContent): x is TextItem {
-	// TextItem has a 'str' field; TextMarkedContent does not
 	return (x as TextItem).str !== undefined;
 }
 
-/**
- * Extracts visible text from a PDF using pdfjs.
- */
 export async function parsePDF(file: File): Promise<string> {
 	const arrayBuffer = await file.arrayBuffer();
 	const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -55,10 +48,6 @@ export async function parsePDF(file: File): Promise<string> {
 // ----- Excel (XLSX) -----
 export type ExcelRow = Record<string, unknown>;
 
-/**
- * Parse the first worksheet to JSON rows (generic-friendly).
- * Pass a row type if you know column names, e.g. parseExcel<{date: string; amount: number}>(file)
- */
 export async function parseExcel<T extends ExcelRow = ExcelRow>(
 	file: File
 ): Promise<T[]> {
@@ -81,7 +70,6 @@ export async function parseExcel<T extends ExcelRow = ExcelRow>(
 				return;
 			}
 
-			// defval ensures missing cells are present as null rather than omitted
 			const json = XLSX.utils.sheet_to_json<T>(worksheet, { defval: null });
 			resolve(json);
 		};

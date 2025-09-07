@@ -1,4 +1,3 @@
-# app/api/routes/upload.py
 from fastapi import APIRouter, UploadFile, File
 from app.services.ocr import extract_text_from_upload
 
